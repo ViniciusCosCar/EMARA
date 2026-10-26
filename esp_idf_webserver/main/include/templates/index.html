@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+                integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+        <!-- after CSS -->
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+                integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+        <title>EMARA</title>
+
+        <style>
+                #map {
+                        height: 500px;
+                }
+        </style>
+</head>
+
+<body>
+        <h1>Dashboard</h1>
+        <div id="map"></div>
+
+        <button type="button">send trajectory</button>
+</body>
+
+<script>
+        var map = L.map('map');
+        map.setView([51.505, -0.09], 13);
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+        // ================================= // ================================= //
+        // drawning
+        // ================================= // ================================= //
+        var marker = L.marker([51.5, -0.09]).addTo(map);
+        var popup = L.popup();
+        var locations = [];
+        function onMapClick(e) {
+                popup
+                        .setLatLng(e.latlng)
+                        .setContent("You clicked the map at " + e.latlng.toString())
+                        .openOn(map);
+                locations.push(e.latlng);
+                console.log(locations);
+        }
+        map.on("click", onMapClick);
+        // ================================= // ================================= //
+        // browser tracking
+        // ================================= // ================================= //
+        // navigator.geolocation.watchPosition(watchPositionSuccess, watchPositionError);
+
+        // let marker, circle, zoomed = false;
+        // function watchPositionSuccess(pos) {
+        //         const lat = pos.coords.latitude;
+        //         const lng = pos.coords.longitude;
+        //         const accuracy = pos.coords.accuracy;
+        //
+        //         if (marker) {
+        //                 map.removeLayer(marker);
+        //                 map.removeLayer(circle);
+        //         }
+        //
+        //         marker = L.marker([lat, lng]).addTo(map);
+        //         circle = L.circle([lat, lng], {radius: accuracy}).addTo(map);
+        //         console.log(`lat=${lat},lng=${lng}`);
+        //
+        //         if (!zoomed) {
+        //                 map.fitBounds(circle.getBounds());
+        //                 zoomed = true;
+        //         }
+        //
+        //         map.setView([lat, lng]);
+        // }
+        // function watchPositionError(err) {
+        //         console.log(err);
+        //         switch (err.code) {
+        //                 case 1:
+        //                         alert("Permission denied");
+        //                         break;
+        //
+        //                 case 2:
+        //                         // alert("Position unavailable");
+        //                         break;
+        //
+        //                 case 3:
+        //                         alert("Timeout");
+        //                         break;
+        //
+        //                 default:
+        //                         alert("Unknown error");
+        //         }
+        // }
+</script>
+
+</html>

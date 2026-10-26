@@ -1,0 +1,63 @@
+#include "freertos/FreeRTOS.h"
+
+#include "app_wifi.h"
+#include "esp_err.h"
+#include "esp_http_server.h"
+#include "freertos/projdefs.h"
+#include "nvs_flash.h"
+#include "utils.h"
+
+const char* TAG = "webserver";
+extern const char index_html_start[] asm("_binary_index_html_start");
+extern const char index_html_end[] asm("_binary_index_html_end");
+
+esp_err_t index_get_handler(httpd_req_t* req)
+{
+        httpd_resp_set_type(req, "text/html");
+        return httpd_resp_send(req, index_html_start, index_html_end - index_html_start);
+}
+const httpd_uri_t index_get_uri = {.uri = "/", .method = HTTP_GET, .handler = index_get_handler, .user_ctx = NULL};
+
+httpd_handle_t start_webserver()
+{
+
+        httpd_handle_t server = NULL;
+        httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+        esp_err_t ret;
+
+        ret = httpd_start(&server, &config);
+        if (ret == ESP_OK)
+                ESP_LOGI(TAG, "Server started successfully, registering URI handlers...");
+        else
+                ESP_LOGI(TAG, "Failed to start the server");
+
+        // register index get requests handler
+        httpd_register_uri_handler(server, &index_get_uri);
+
+        return server;
+}
+
+void app_main(void)
+{
+        esp_err_t ret = ESP_OK;
+
+        // ————————————————————————————————————————————————————————————————————————————
+        //  Inits
+        // ————————————————————————————————————————————————————————————————————————————
+        // nvs_flash
+        ret = nvs_flash_init();
+        if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
+        {
+                ESP_ERROR_CHECK(nvs_flash_erase());
+                ESP_ERROR_CHECK(nvs_flash_init());
+        }
+        // wifi
+        ret = wifi_init_sta();
+        ESP_ERROR_CHECK(ret);
+
+        // webserver
+        httpd_handle_t server = start_webserver();
+        if (!server) ESP_ERROR_CHECK(ESP_FAIL);
+
+        while (true) vTaskDelay(pdMS_TO_TICKS(500));
+}

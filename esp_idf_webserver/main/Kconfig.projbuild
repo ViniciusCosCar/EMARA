@@ -1,0 +1,32 @@
+menu "WiFi config"
+
+        config WIFI_SSID
+                string "WiFi SSID"
+                default "ssid"
+                help
+                        SSID (network name) to connect to
+
+        config WIFI_IDENTITY
+                string "Identity"
+                default "anonymous"
+                help
+                        anonymous@...
+
+        config WIFI_USERNAME
+                string "Username"
+                default "username"
+                help 
+                        ...@...
+
+        config WIFI_PASSWORD
+                string "WiFi Password"
+                default "password"
+                help
+                        WiFi password (WPA or WPA2)
+
+        config RETRY_INTERVAL_MS
+                int "WiFi reconnect interval between attempts"
+                default 3000
+                help
+                        Set time interval between consecutive reconnection attampts
+endmenu

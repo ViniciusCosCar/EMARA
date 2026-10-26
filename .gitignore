@@ -1,0 +1,12 @@
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# esp-idf specific
+build
+managed_components/
+dependencies.lock
+sdkconfig
+sdkconfig.old
+.cache/
