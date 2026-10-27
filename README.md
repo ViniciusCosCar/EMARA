@@ -1,6 +1,6 @@
 # EMARA
 
-## Planeamento
+## Planning
 | Nº | Designação da atividade | Descrição | Início | Fim |
 |---:|---|---|---|---|
 | 1 | Análise do estado da arte | Revisão da literatura e análise comparativa das soluções existentes. | 21/10/2026 | 30/10/2026 |
@@ -17,3 +17,12 @@
 | 12 | Dashboard III | Melhorias da interface do dashboard, com foco na usabilidade e na apresentação da informação. | 29/11/2026 | 09/12/2026 |
 | 13 | Produto final | Melhorias da robustez estrutural do protótipo e do seu aspeto visual. | 10/12/2026 | 10/12/2026 |
 | 14 | Validação final | Repetição dos testes do Protótipo II com o sistema aperfeiçoado. | 11/12/2026 | 12/12/2026 |
+
+
+## Trajectory
+### Format
+#### Example
+{
+    "lat": 51.505,
+    "lng": -0.09
+}
