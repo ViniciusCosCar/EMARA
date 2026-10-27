@@ -16,7 +16,47 @@ esp_err_t index_get_handler(httpd_req_t* req)
         httpd_resp_set_type(req, "text/html");
         return httpd_resp_send(req, index_html_start, index_html_end - index_html_start);
 }
+// TODO: send received trajectory to STM32WL through UART
+// TODO: add trajectory verification before forwarding
+esp_err_t trajectory_post_handler(httpd_req_t* req)
+{
+        char buf[64];
+        int ret, remaining = req->content_len;
+
+        httpd_resp_set_type(req, "text/plain");
+
+        while (remaining > 0)
+        {
+                // read data for the request
+                if ((ret = httpd_req_recv(req, buf, (remaining < sizeof buf) ? (remaining) : (sizeof buf))) <= 0)
+                {
+                        if (ret == HTTPD_SOCK_ERR_TIMEOUT)
+                        {
+                                // retry receiving if timeout occoured
+                                continue;
+                        }
+                        httpd_resp_sendstr(req, "Trajectory reception failed");
+                        return ESP_FAIL;
+                }
+
+                // Exemple for the TODO:
+                // if(uart_send_chunk(buf, ret) < 0) // failure
+                // {...}
+                remaining -= ret;
+
+                // log data received
+                LOGFI(TAG, "—————————— RECEIVED DATA ——————————");
+                LOGFI(TAG, "%.*s", ret, buf);
+                LOGFI(TAG, "———————————————————————————————————");
+        }
+        // end response
+        httpd_resp_sendstr(req, "Trajectory received successfully");
+
+        return ESP_OK;
+}
 const httpd_uri_t index_get_uri = {.uri = "/", .method = HTTP_GET, .handler = index_get_handler, .user_ctx = NULL};
+const httpd_uri_t trajectory_post_uri = {
+    .uri = "/trajectory", .method = HTTP_POST, .handler = trajectory_post_handler, .user_ctx = NULL};
 
 httpd_handle_t start_webserver()
 {
@@ -33,6 +73,7 @@ httpd_handle_t start_webserver()
 
         // register index get requests handler
         httpd_register_uri_handler(server, &index_get_uri);
+        httpd_register_uri_handler(server, &trajectory_post_uri);
 
         return server;
 }
