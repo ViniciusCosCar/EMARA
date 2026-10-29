@@ -8,14 +8,37 @@
 #include "utils.h"
 
 const char* TAG = "webserver";
+
 extern const char index_html_start[] asm("_binary_index_html_start");
 extern const char index_html_end[] asm("_binary_index_html_end");
+extern const char index_js_start[] asm("_binary_index_js_start");
+extern const char index_js_end[] asm("_binary_index_js_end");
+extern const char index_css_start[] asm("_binary_index_css_start");
+extern const char index_css_end[] asm("_binary_index_css_end");
 
-esp_err_t index_get_handler(httpd_req_t* req)
+// —————————————————————————————————————————————————————————————————————————
+//  webserver and request handlers
+// —————————————————————————————————————————————————————————————————————————
+// —— GET
+// index
+esp_err_t index_html_get_handler(httpd_req_t* req)
 {
         httpd_resp_set_type(req, "text/html");
         return httpd_resp_send(req, index_html_start, index_html_end - index_html_start);
 }
+esp_err_t index_js_get_handler(httpd_req_t* req)
+{
+        httpd_resp_set_type(req, "application/javascript");
+        return httpd_resp_send(req, index_js_start, index_js_end - index_js_start);
+}
+esp_err_t index_css_get_handler(httpd_req_t* req)
+{
+        httpd_resp_set_type(req, "text/css");
+        return httpd_resp_send(req, index_css_start, index_css_end - index_css_start);
+}
+
+// —— POST
+// trajectory
 // TODO: send received trajectory to STM32WL through UART
 // TODO: add trajectory verification before forwarding
 esp_err_t trajectory_post_handler(httpd_req_t* req)
@@ -45,7 +68,7 @@ esp_err_t trajectory_post_handler(httpd_req_t* req)
                 remaining -= ret;
 
                 // log data received
-                LOGFI(TAG, "—————————— RECEIVED DATA ——————————");
+                LOGFI(TAG, "—————————— RECEIVED TRAJECTORY ——————————");
                 LOGFI(TAG, "%.*s", ret, buf);
                 LOGFI(TAG, "———————————————————————————————————");
         }
@@ -54,10 +77,20 @@ esp_err_t trajectory_post_handler(httpd_req_t* req)
 
         return ESP_OK;
 }
-const httpd_uri_t index_get_uri = {.uri = "/", .method = HTTP_GET, .handler = index_get_handler, .user_ctx = NULL};
+
+// —— uri
+// index
+const httpd_uri_t index_html_get_uri = {
+    .uri = "/", .method = HTTP_GET, .handler = index_html_get_handler, .user_ctx = NULL};
+const httpd_uri_t index_js_get_uri = {
+    .uri = "/dashboard/js/index.js", .method = HTTP_GET, .handler = index_js_get_handler, .user_ctx = NULL};
+const httpd_uri_t index_css_get_uri = {
+    .uri = "/dashboard/css/index.css", .method = HTTP_GET, .handler = index_css_get_handler, .user_ctx = NULL};
+// trajectory
 const httpd_uri_t trajectory_post_uri = {
     .uri = "/trajectory", .method = HTTP_POST, .handler = trajectory_post_handler, .user_ctx = NULL};
 
+// —— webserver
 httpd_handle_t start_webserver()
 {
 
@@ -71,20 +104,23 @@ httpd_handle_t start_webserver()
         else
                 ESP_LOGI(TAG, "Failed to start the server");
 
-        // register index get requests handler
-        httpd_register_uri_handler(server, &index_get_uri);
+        // index
+        httpd_register_uri_handler(server, &index_html_get_uri);
+        httpd_register_uri_handler(server, &index_js_get_uri);
+        httpd_register_uri_handler(server, &index_css_get_uri);
+        // trajectory
         httpd_register_uri_handler(server, &trajectory_post_uri);
 
         return server;
 }
 
+// —————————————————————————————————————————————————————————————————————————
+//  main application
+// —————————————————————————————————————————————————————————————————————————
 void app_main(void)
 {
-        esp_err_t ret = ESP_OK;
+        esp_err_t ret;
 
-        // ————————————————————————————————————————————————————————————————————————————
-        //  Inits
-        // ————————————————————————————————————————————————————————————————————————————
         // nvs_flash
         ret = nvs_flash_init();
         if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
@@ -93,8 +129,7 @@ void app_main(void)
                 ESP_ERROR_CHECK(nvs_flash_init());
         }
         // wifi
-        ret = wifi_init_sta();
-        ESP_ERROR_CHECK(ret);
+        ESP_ERROR_CHECK(wifi_init_apsta());
 
         // webserver
         httpd_handle_t server = start_webserver();
