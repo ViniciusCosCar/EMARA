@@ -3,5 +3,6 @@
 
 #include "esp_err.h"
 
-esp_err_t_uart_comm_init(void);
+esp_err_t uart_comm_init(void);
+
 #endif
