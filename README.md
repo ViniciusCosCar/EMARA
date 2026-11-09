@@ -1,5 +1,7 @@
 # EMARA
 
+<img width="1254" height="1254" alt="Emblema EMARA_ Estação Aquática" src="https://github.com/user-attachments/assets/f22b142a-7376-4df2-b7e2-14f6463b9cbc" />
+
 ## Overview
 
 The main idea of this project is to develop a cheap and lightweight application for an autonamous boat, with remote trajectory setting over a web application and real-time visualization.
