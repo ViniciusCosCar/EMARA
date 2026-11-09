@@ -20,31 +20,50 @@ Once the trajectory is received by the ESP32-boat, which is also connected via U
 >5. At the early stages of this project, the trajectory following algorithm used will follow the trajectory linearly, meaning that it will not try to balance motor's intensity based on current acceleration in order to counter water's drag. However, we do plan to work on it at the A8 stage: programmed to start dev. at day 29-Nov.
 
 >[!WARNING]
->There currently isn’t any user certification, so anyone connected to the network can access it, meaning that multiple users might define diferent trajectories and the actual trajectory being sent to the boat, or the number of trajectories being actually sent, is undefined. Single user access is currently at discussion, but probably will be neither implemented nor actually considered until 22-december.
+>There currently isn’t any user certification, so anyone connected to the network can access it, meaning that multiple users might define diferent trajectories and the actual trajectory being sent to the boat, or the number of trajectories being actually sent, is undefined. Single user access is currently at discussion, but probably will be neither implemented nor actually seriously considered until 22-december.
 
 ### Trajectory Following Modes
-- Patrol
+
+- Patrol:
+	If ESP32-boat is in Patrol mode, it will go back and forth between the first and the last coordinate.
+	
+- Hold:
+	If ESP32-boat is in Hold mode, it will follow the trajectory until the last coordinate and hold the position.
+	
+- Move:
+	If ESP32-boat is in Move mode, it will follow the trajectory until the last coordinate, but not hold the position, meaning that no reaction will be made against water drag.
 
 ## Planning
 
-| Nº da Atividade | Designação | Descrição | Início | Fim |
-|-----------------|------------|-----------|---------|-----|
-| A1 | Dashboard I | Implementação de um servidor web no ESP32-web e desenvolvimento do sistema de definição e envio de trajetórias. | 08-Nov | 14-Nov |
-| A2 | Comunicação UART | Desenvolvimento da comunicação série entre ESP32 e o módulo LoRa-E5. | 08-Nov | 14-Nov |
-| A3 | Comunicação LoRa | Desenvolvimento da comunicação LoRa entre os dois ESP32 através dos módulos LoRa-E5. | 08-Nov | 21-Nov |
-| A4 | Protótipo I | Teste do sistema de comunicação: testar comunicação entre ESP32-web e ESP32-barco. | 22-Nov | 22-Nov |
-| A5 | Navegação e Motores I | Desenvolvimento de um sistema básico de controlo dos motores com base numa trajetória predefinida. | 22-Nov | 28-Nov |
-| A6 | Navegação e Motores II | Leitura da IMU de 9 eixos e envio da posição GNSS ao ESP32-web + atualização da posição do barco na Dashboard. | 22-Nov | 28-Nov |
-| A7 | Protótipo II | Repetir testes da etapa A4 e testar o funcionamento do sistema de navegação desenvolvido na etapa A5. | 29-Nov | 29-Nov |
-| A8 | Navegação e Motores III | Desenvolvimento de um sistema de adaptação da trajetória com base nos dados obtidos pela IMU implementada na etapa A5. | 29-Nov | 09-Dec |
-| A9 | Dashboard III | Desenvolvimento de uma nova interface gráfica com foco na usabilidade e na apresentação da informação. | 29-Nov | 09-Dec |
-| A10 | Produto Final | Aperfeiçoamento estrutural do protótipo e do seu aspeto visual. | 10-Dec | 10-Dec |
-| A11 | Validação Final | Repetição da etapa A7 com o sistema aperfeiçoado. | 11-Dec | 12-Dec |
+| Nº da Atividade | Designação              | Descrição                                                                                                                    | Início | Fim    |
+| --------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------ | ------ |
+| A1              | Dashboard I             | Implementação de um servidor web no ESP32-web e desenvolvimento do sistema de definição e envio de trajetórias.              | 08-Nov | 14-Nov |
+| A2              | Comunicação UART        | Desenvolvimento da comunicação série entre ESP32 e o módulo LoRa-E5.                                                         | 08-Nov | 14-Nov |
+| A3              | Comunicação LoRa        | Desenvolvimento da comunicação LoRa entre os dois ESP32 através dos módulos LoRa-E5.                                         | 08-Nov | 21-Nov |
+| A4              | Protótipo I             | Teste do sistema de comunicação: testar comunicação entre ESP32-web e ESP32-boat.                                            | 22-Nov | 22-Nov |
+| A5              | Navegação e Motores I   | Desenvolvimento de um sistema básico de controlo dos motores com base numa trajetória predefinida (Move e Patrol)            | 22-Nov | 28-Nov |
+| A6              | Navegação e Motores II  | Leitura da IMU de 9 eixos e envio da posição GNSS ao ESP32-web + atualização da posição do barco na Dashboard0.              | 22-Nov | 28-Nov |
+| A7              | Protótipo II            | Repetir testes da etapa A4 e testar o funcionamento do sistema de navegação desenvolvido na etapa A5.                        | 29-Nov | 29-Nov |
+| A8              | Navegação e Motores III | Desenvolvimento de um sistema de adaptação da trajetória com base nos dados obtidos pela IMU implementada na etapa A5 (Hold) | 29-Nov | 09-Dec |
+| A9              | Dashboard III           | Desenvolvimento de uma nova interface gráfica com foco na usabilidade e na apresentação da informação.                       | 29-Nov | 09-Dec |
+| A10             | Produto Final           | Aperfeiçoamento estrutural do protótipo e do seu aspeto visual.                                                              | 10-Dec | 10-Dec |
+| A11             | Validação Final         | Repetição da etapa A7 com o sistema aperfeiçoado.                                                                            | 11-Dec | 12-Dec |
 
 ## Trajectory
-### Format
-#### Example
-{
-    "lat": 51.505,
-    "lng": -0.09
-}
+
+### Trajectory Following Mode
+
+**enum**
+	{
+		Patrol = 1,
+		Hold = 2,
+		Move = 3
+	}
+### JSON format
+
+***Example**
+	{
+	    "lat": 51.505,
+	    "lng": -0.09,
+		"mode": 1
+	}
