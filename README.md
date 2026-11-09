@@ -104,7 +104,7 @@ Once the trajectory is received by the ESP32-boat, which is also connected via U
 	}
 ### JSON format
 
-***Example**
+**Example**
 	{
 	    "lat": 51.505,
 	    "lng": -0.09,
