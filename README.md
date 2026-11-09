@@ -6,6 +6,47 @@ The main idea of this project is to develop a cheap and lightweight application 
 
 ## Detailed Overview
 
+```mermaid
+flowchart LR
+
+    USER[User Browser]
+
+    WEB[ESP32-web<br/>Dashboard + Web Server]
+
+    OSM[OpenStreetMap]
+
+    LORA1[LoRa-E5]
+    LORA2[LoRa-E5]
+
+    BOAT[ESP32-boat]
+
+    GNSS[GNSS]
+    IMU[9-Axis IMU]
+
+    MOTORS[Motor Controller]
+
+    USER -->|Define Trajectory| WEB
+
+    OSM -->|Map Tiles| WEB
+
+    WEB -->|Trajectory JSON + Mode| LORA1
+
+    LORA1 -. LoRa .-> LORA2
+
+    LORA2 -->|Trajectory| BOAT
+
+    GNSS -->|Position| BOAT
+    IMU -->|Orientation| BOAT
+
+    BOAT -->|Motor Commands| MOTORS
+
+    BOAT -->|Telemetry| LORA2
+    LORA2 -. LoRa .-> LORA1
+    LORA1 -->|GNSS Data| WEB
+
+    WEB -->|Real-Time Visualization| USER
+```
+
 The web application will run over an ESP32 on the ground, which will be called ESP32-web from now on, acting as both softAP and station, which means that it will both create a LAN, as it will connect to an existing AP with internet access, then route this internet to all devices connected to it’s LAN [1]. The reason behind routing the internet is because the ESP32-web doesn’t load pre-installed tiles to the leaflet map, but instead retrieve them from openstreetmap in real time (https://tile.openstreetmap.org/{z}/{x}/{y}.png), thus requiring internet access. Once a trajectory has being defined, the client can press a “send trajectory” button and send a post request to the server containing the string of a JSON array of the selected coordinates, including the initial position [2].
 
 Once the ESP32-web receives the trajectory, it blindly [3] starts sending it to the ESP32 on the boat, ESP32-boat, alongside a number that indicates how the ESP32-boat must follow it [4], through LoRa point-to-point communication over a LoRa-E5 module powered by a STM32WLE5 (which we will not program, but only communicate with through the Factory AT Firmware via UART, https://wiki.seeedstudio.com/LoRa-E5_STM32WLE5JC_Module/).
