@@ -1,3 +1,4 @@
+// map and pos. init.
 var pos = [40.179479762376175, -8.418097439674227];
 var map = L.map('map');
 map.setView(pos, 13);
@@ -7,46 +8,64 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
-var trajectory = [pos];
+var waypoints = [pos];
 var marker = L.marker(pos).addTo(map);
-var polygon = L.polygon([pos]).addTo(map);
+var polyline = L.polyline([pos]).addTo(map);
 var popup = L.popup()
 
-function onMapClick(e) {
+function clearTrajectory() {
+        waypoints = [pos];
+        polyline.setLatLngs([pos])
+}
+
+// "click on map" callback
+map.on("click", (e) => {
+        // notify the user, update trajectories array, update drawn polyline
         popup
                 .setLatLng(e.latlng)
-                .setContent("You clicked the map at " + e.latlng.toString())
+                .setContent(e.latlng.toString())
                 .openOn(map);
-        trajectory.push(e.latlng);
+        waypoints.push(e.latlng);
+        polyline.addLatLng(e.latlng);
+        console.log(waypoints);
+});
 
-        polygon.addLatLng(e.latlng);
-        console.log(trajectory);
-}
-map.on("click", onMapClick);
-
-function clearTrajectory() {
-        trajectory = [pos];
-        polygon.setLatLngs([pos])
-}
-
+// add event listener to buttons
 document.querySelector("#clearTrajectoryButton").addEventListener("click", () => {
         clearTrajectory();
         console.log("trajectory cleared");
 })
 document.querySelector("#sendTrajectoryButton").addEventListener("click", () => {
+
+        // trajectory mode
+        const mode = Number(document.querySelector("#trajectoryMode").value);
+
+        // trajectory
+        const trajectory = {
+                mode: mode,
+                waypoints: waypoints.map(point => ({
+                        lat: point.lat,
+                        lng: point.lng
+                }))
+        };
+
+        // post request
         fetch("/trajectory", {
                 method: "POST",
+                headers: {
+                        "Content-Type": "application/json"
+                },
                 body: JSON.stringify(trajectory)
         }).then((res) => {
                 if (!res.ok) {
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
 
-                console.log("trajectory sent successfully");
+                console.log("Trajectory sent successfully.");
                 clearTrajectory();
 
         }).catch((err) => {
-                console.log(`failed to send trajectory: ${err.message}`);
+                console.log(`Failed to send trajectory: ${err.message}.`);
         })
 })
 

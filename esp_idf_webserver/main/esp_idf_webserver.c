@@ -17,6 +17,28 @@ extern const char index_css_start[] asm("_binary_index_css_start");
 extern const char index_css_end[] asm("_binary_index_css_end");
 
 // —————————————————————————————————————————————————————————————————————————
+//  Trajectory
+// —————————————————————————————————————————————————————————————————————————
+enum TrajectoryMode
+{
+        Patrol = 1,
+        Hold   = 2,
+        Move   = 3,
+};
+struct Waypoint
+{
+        int lng;
+        int lat;
+};
+struct Trajectory
+{
+        struct Waypoint* waypoints;
+        int n_waypoints;
+
+        enum TrajectoryMode trajectory_mode;
+};
+
+// —————————————————————————————————————————————————————————————————————————
 //  webserver and request handlers
 // —————————————————————————————————————————————————————————————————————————
 // —— GET
@@ -39,8 +61,6 @@ esp_err_t index_css_get_handler(httpd_req_t* req)
 
 // —— POST
 // trajectory
-// TODO: send received trajectory to STM32WL through UART
-// TODO: add trajectory verification before forwarding
 esp_err_t trajectory_post_handler(httpd_req_t* req)
 {
         char buf[64];
