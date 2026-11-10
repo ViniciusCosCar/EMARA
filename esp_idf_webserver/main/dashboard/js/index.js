@@ -1,5 +1,5 @@
 // map and pos. init.
-var pos = [40.179479762376175, -8.418097439674227];
+var pos = L.latLng(40.179479762376175, -8.418097439674227);
 var map = L.map('map');
 map.setView(pos, 13);
 
