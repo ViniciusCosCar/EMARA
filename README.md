@@ -87,7 +87,7 @@ Once the trajectory is received by the ESP32-boat, which is also connected via U
 | A5              | Navegação e Motores I   | Desenvolvimento de um sistema básico de controlo dos motores com base numa trajetória predefinida (Move e Patrol)            | 22-Nov | 28-Nov |
 | A6              | Navegação e Motores II  | Leitura da IMU de 9 eixos e envio da posição GNSS ao ESP32-web + atualização da posição do barco na Dashboard0.              | 22-Nov | 28-Nov |
 | A7              | Protótipo II            | Repetir testes da etapa A4 e testar o funcionamento do sistema de navegação desenvolvido na etapa A5.                        | 29-Nov | 29-Nov |
-| A8              | Navegação e Motores III | Desenvolvimento de um sistema de adaptação da trajetória com base nos dados obtidos pela IMU implementada na etapa A5 (Hold) | 29-Nov | 09-Dec |
+| A8              | Navegação e Motores III | Desenvolvimento de um sistema de adaptação da trajetória com base nos dados obtidos pela IMU e pelo GNSS implementados na etapa A5, e desenvolver modo Hold | 29-Nov | 09-Dec |
 | A9              | Dashboard III           | Desenvolvimento de uma nova interface gráfica com foco na usabilidade e na apresentação da informação.                       | 29-Nov | 09-Dec |
 | A10             | Produto Final           | Aperfeiçoamento estrutural do protótipo e do seu aspeto visual.                                                              | 10-Dec | 10-Dec |
 | A11             | Validação Final         | Repetição da etapa A7 com o sistema aperfeiçoado.                                                                            | 11-Dec | 12-Dec |
