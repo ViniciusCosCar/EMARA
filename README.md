@@ -49,7 +49,7 @@ flowchart LR
     WEB -->|Real-Time Visualization| USER
 ```
 
-The web application will run over an ESP32 on the ground, which will be called ESP32-web from now on, acting as both softAP and station, which means that it will both create a LAN, as it will connect to an existing AP with internet access, then route this internet to all devices connected to it’s LAN [1]. The reason behind routing the internet is because the ESP32-web doesn’t load pre-installed tiles to the leaflet map, but instead retrieve them from openstreetmap in real time (https://tile.openstreetmap.org/{z}/{x}/{y}.png), thus requiring internet access. Once a trajectory has being defined, the client can press a “send trajectory” button and send a post request to the server containing the string of a JSON array of the selected coordinates, including the initial position [2].
+The web application will run over an ESP32 on the ground, which will be called ESP32-web from now on, acting as both softAP and station, which means that it will both create a LAN, as it will connect to an existing AP with internet access, then route this internet to all devices connected to it’s LAN [1]. The reason behind routing the internet is because the ESP32-web doesn’t load pre-installed tiles to the leaflet map, but instead retrieve them from openstreetmap in real time (https://tile.openstreetmap.org/{z}/{x}/{y}.png), thus requiring internet access. Once a trajectory has being defined, the client can press a “send trajectory” button and send a post request to the server containing the JSON object, including the initial position as a waypoint [2].
 
 Once the ESP32-web receives the trajectory, it blindly [3] starts sending it to the ESP32 on the boat, ESP32-boat, alongside a number that indicates how the ESP32-boat must follow it [4], through LoRa point-to-point communication over a LoRa-E5 module powered by a STM32WLE5 (which we will not program, but only communicate with through the Factory AT Firmware via UART, https://wiki.seeedstudio.com/LoRa-E5_STM32WLE5JC_Module/).
 
@@ -97,16 +97,32 @@ Once the trajectory is received by the ESP32-boat, which is also connected via U
 ### Trajectory Following Mode
 
 **enum**
-	{
-		Patrol = 1,
-		Hold = 2,
-		Move = 3
-	}
+```c
+{
+	Patrol = 1,
+	Hold = 2,
+	Move = 3
+}
+```
 ### JSON format
 
 **Example**
-	{
-	    "lat": 51.505,
-	    "lng": -0.09,
-		"mode": 1
-	}
+```c
+{
+    "mode": 1,
+    "waypoints": [
+        {
+            "lat": 51.505,
+            "lng": -0.09
+        },
+        {
+            "lat": 51.506,
+            "lng": -0.08
+        },
+        {
+            "lat": 51.507,
+            "lng": -0.07
+        }
+    ]
+}
+```
