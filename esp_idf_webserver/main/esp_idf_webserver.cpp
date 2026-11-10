@@ -1,3 +1,5 @@
+
+#include "Arduino.h"
 #include "freertos/FreeRTOS.h"
 
 #include "app_wifi.h"
@@ -120,16 +122,19 @@ httpd_handle_t start_webserver()
 
         ret = httpd_start(&server, &config);
         if (ret == ESP_OK)
+        {
                 ESP_LOGI(TAG, "Server started successfully, registering URI handlers...");
+                // index
+                httpd_register_uri_handler(server, &index_html_get_uri);
+                httpd_register_uri_handler(server, &index_js_get_uri);
+                httpd_register_uri_handler(server, &index_css_get_uri);
+                // trajectory
+                httpd_register_uri_handler(server, &trajectory_post_uri);
+        }
         else
+        {
                 ESP_LOGI(TAG, "Failed to start the server");
-
-        // index
-        httpd_register_uri_handler(server, &index_html_get_uri);
-        httpd_register_uri_handler(server, &index_js_get_uri);
-        httpd_register_uri_handler(server, &index_css_get_uri);
-        // trajectory
-        httpd_register_uri_handler(server, &trajectory_post_uri);
+        }
 
         return server;
 }
@@ -137,9 +142,11 @@ httpd_handle_t start_webserver()
 // —————————————————————————————————————————————————————————————————————————
 //  main application
 // —————————————————————————————————————————————————————————————————————————
-void app_main(void)
+extern "C" void app_main(void)
 {
         esp_err_t ret;
+
+        initArduino();
 
         // nvs_flash
         ret = nvs_flash_init();
