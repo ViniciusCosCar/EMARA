@@ -1,4 +1,5 @@
 
+#include "esp_wifi_types_generic.h"
 #include "freertos/FreeRTOS.h"
 
 #include "app_wifi.h"
@@ -6,7 +7,9 @@
 #include "esp_mac.h"
 #include "esp_wifi.h"
 
+#include "sdkconfig.h"
 #include "utils.h"
+#include <cstring>
 
 // logging tag
 static const char* TAG = "WiFi APsta";
@@ -165,23 +168,17 @@ esp_err_t wifi_init_apsta(void)
 
         // config wifi and set mode to apsta
         ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
-        wifi_config_t ap_config = {
-            .ap =
-                {
-                     .ssid           = CONFIG_AP_WIFI_SSID,
-                     .password       = CONFIG_AP_WIFI_PASSWORD,
-                     .max_connection = CONFIG_AP_WIFI_MAX_CONNECTED,
-                     .authmode       = WIFI_AUTH_WPA2_PSK,
-                     },
-        };
 
-        wifi_config_t sta_config = {
-            .sta =
-                {
-                      .ssid     = CONFIG_STA_WIFI_SSID,
-                      .password = CONFIG_STA_WIFI_PASSWORD,
-                      },
-        };
+        wifi_config_t ap_config = {};
+        strlcpy((char*)ap_config.ap.ssid, CONFIG_AP_WIFI_SSID, sizeof(ap_config.ap.ssid));
+        strlcpy((char*)ap_config.ap.password, CONFIG_AP_WIFI_PASSWORD, sizeof(ap_config.ap.password));
+        ap_config.ap.max_connection = CONFIG_AP_WIFI_MAX_CONNECTED;
+        ap_config.ap.authmode       = WIFI_AUTH_WPA2_PSK;
+
+        wifi_config_t sta_config = {};
+        strlcpy((char*)sta_config.sta.ssid, CONFIG_STA_WIFI_SSID, sizeof(sta_config.sta.ssid));
+        strlcpy((char*)sta_config.sta.password, CONFIG_STA_WIFI_PASSWORD, sizeof(sta_config.sta.password));
+
         // set wifi configuration
         ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &ap_config));
         ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &sta_config));
