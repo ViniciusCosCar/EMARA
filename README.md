@@ -126,3 +126,11 @@ Once the trajectory is received by the ESP32-boat, which is also connected via U
     ]
 }
 ```
+
+
+>[!WARNING]
+> M5Unified is vendored locally instead of being pulled via
+>    ```sh
+>       idf.py add-dependency "m5stack/m5unified^0.3.0"
+>   ```
+> because this version is not compatible with our current toolchain and required a small change (isfinite -> std::isfinite, in src/utility/Power_Class.inl:3005). Using the managed component could overwrite these changes during reconfiguration.
