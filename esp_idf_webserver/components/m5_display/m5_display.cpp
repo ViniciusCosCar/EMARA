@@ -85,7 +85,6 @@ void display_task(void*)
                 const int battery_level = static_cast<int>(M5.Power.getBatteryLevel());
 
                 M5.Display.fillScreen(UI::BG);
-
                 M5.Display.setTextSize(1);
 
                 // HEADER
@@ -138,10 +137,17 @@ void display_task(void*)
 
                 // FOOTER
                 M5.Display.drawFastHLine(4, M5.Display.height() - 12, M5.Display.width() - 8, UI::GREY);
-
-                M5.Display.setTextColor(UI::GREY, UI::BG);
                 M5.Display.setCursor(5, M5.Display.height() - 9);
-                M5.Display.printf((wifi_is_connected) ? "SYSTEM ONLINE" : "SYSTEM OFFLINE");
+                if (wifi_is_connected)
+                {
+                        M5.Display.setTextColor(UI::GREEN, UI::BG);
+                        M5.Display.printf("SYSTEM ONLINE");
+                }
+                else
+                {
+                        M5.Display.setTextColor(UI::RED, UI::BG);
+                        M5.Display.printf("SYSTEM OFFLINE");
+                }
 
                 vTaskDelay(pdMS_TO_TICKS(1000));
         }
