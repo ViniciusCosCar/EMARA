@@ -1,0 +1,11 @@
+
+#include "Arduino.h"
+#include "freertos/FreeRTOS.h"
+
+#include "app_wifi.h"
+#include "esp_err.h"
+#include "esp_http_server.h"
+#include "freertos/projdefs.h"
+#include "m5_display.h"
+#include "nvs_flash.h"
+#include "utils.h"

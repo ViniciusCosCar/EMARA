@@ -33,6 +33,7 @@ map.on("click", (e) => {
 // add event listener to buttons
 document.querySelector("#clearTrajectoryButton").addEventListener("click", () => {
         clearTrajectory();
+        popup.close();
         console.log("trajectory cleared");
 })
 document.querySelector("#sendTrajectoryButton").addEventListener("click", () => {
@@ -63,6 +64,7 @@ document.querySelector("#sendTrajectoryButton").addEventListener("click", () => 
 
                 console.log("Trajectory sent successfully.");
                 clearTrajectory();
+                popup.close();
 
         }).catch((err) => {
                 console.log(`Failed to send trajectory: ${err.message}.`);
