@@ -11,15 +11,18 @@
 #include "utils.h"
 #include <cstring>
 
-// logging tag
+// Logging tag
 static const char* TAG = "WiFi APsta";
 
 // DHCP server option
 #define DHCPS_OFFER_DNS 0x02
 
-// network interfaces
+// Network interfaces
 esp_netif_t* sta_netif;
 esp_netif_t* ap_netif;
+
+// Initialize extern variable
+volatile bool wifi_is_connected = false;
 
 void softap_set_dns_addr(esp_netif_t* esp_netif_ap, esp_netif_t* esp_netif_sta)
 {
@@ -68,6 +71,7 @@ void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id
                          * was caused by esp_wifi_disconnect() or esp_wifi_stop() */
                         /* desperatly tries to reconnect */
                         wifi_event_sta_disconnected_t* event = (wifi_event_sta_disconnected_t*)event_data;
+                        wifi_is_connected                    = false;
 
                         LOGFE(TAG, "disconnected from AP. Trying to reconnect... rc=%d", event->reason);
                         esp_wifi_connect();
@@ -107,6 +111,8 @@ void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id
                 case IP_EVENT_STA_GOT_IP:
                 {
                         ip_event_got_ip_t* event = (ip_event_got_ip_t*)event_data;
+
+                        wifi_is_connected = true;
 
                         LOGFI(TAG, "STA got ip: " IPSTR, IP2STR(&event->ip_info.ip));
 

@@ -1,10 +1,11 @@
 #pragma once
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-void m5_display_start(void);
+        void m5_display_start(void);
 
 #ifdef __cplusplus
 }

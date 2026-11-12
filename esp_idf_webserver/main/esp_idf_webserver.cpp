@@ -1,11 +1,12 @@
 
-#include "Arduino.h"
 #include "freertos/FreeRTOS.h"
 
+#include "Arduino.h"
 #include "app_wifi.h"
 #include "esp_err.h"
 #include "esp_http_server.h"
 #include "freertos/projdefs.h"
+#include "m5_display.h"
 #include "nvs_flash.h"
 #include "utils.h"
 
@@ -90,9 +91,7 @@ esp_err_t trajectory_post_handler(httpd_req_t* req)
                 remaining -= ret;
 
                 // log data received
-                LOGFI(TAG, "—————————— RECEIVED TRAJECTORY ——————————");
                 LOGFI(TAG, "%.*s", ret, buf);
-                LOGFI(TAG, "———————————————————————————————————");
         }
         // end response
         httpd_resp_sendstr(req, "Trajectory received successfully");
@@ -147,6 +146,7 @@ extern "C" void app_main(void)
         esp_err_t ret;
 
         initArduino();
+        m5_display_start();
 
         // nvs_flash
         ret = nvs_flash_init();

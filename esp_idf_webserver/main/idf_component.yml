@@ -4,4 +4,3 @@ dependencies:
   idf:
     version: '>=4.1.0'
   espressif/arduino-esp32: ^3.3.12
-  m5stack/M5Unified: ^0.2.5

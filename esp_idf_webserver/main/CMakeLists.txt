@@ -1,6 +1,6 @@
-idf_component_register( SRCS "esp_idf_webserver.cpp" "m5_display.cpp"
+idf_component_register(SRCS "esp_idf_webserver.cpp"
                         INCLUDE_DIRS "."
-                        REQUIRES arduino M5Unified esp_netif
+                        REQUIRES app_wifi esp_http_server nvs_flash m5_display
                         EMBED_FILES
                                 "dashboard/templates/index.html"
                                 "dashboard/js/index.js"
