@@ -66,11 +66,12 @@ esp_err_t index_css_get_handler(httpd_req_t* req)
 // trajectory
 esp_err_t trajectory_post_handler(httpd_req_t* req)
 {
-        char buf[64];
+        char buf[128];
         int ret, remaining = req->content_len;
 
         httpd_resp_set_type(req, "text/plain");
 
+        LOGFI(TAG, "============ TRAJECTORY RECEIVED ============");
         while (remaining > 0)
         {
                 // read data for the request
@@ -84,15 +85,13 @@ esp_err_t trajectory_post_handler(httpd_req_t* req)
                         httpd_resp_sendstr(req, "Trajectory reception failed");
                         return ESP_FAIL;
                 }
-
-                // Exemple for the TODO:
-                // if(uart_send_chunk(buf, ret) < 0) // failure
-                // {...}
                 remaining -= ret;
 
                 // log data received
                 LOGFI(TAG, "%.*s", ret, buf);
         }
+        LOGFI(TAG, "=============================================");
+
         // end response
         httpd_resp_sendstr(req, "Trajectory received successfully");
 
