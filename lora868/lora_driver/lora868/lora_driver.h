@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-void lora_driver_init(void);
+bool lora_driver_init(void);
 
 int lora_driver_send(const uint8_t *data, size_t len);
 
