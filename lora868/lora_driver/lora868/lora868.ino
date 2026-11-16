@@ -13,7 +13,7 @@ void setup()
 
 void loop()
 {
-  const char message[] = "You are gay";
+  const char message[] = "Hello";
   size_t size = lora_driver_send((const uint8_t *) message, sizeof(message));
   if(size > 0 )
   {
