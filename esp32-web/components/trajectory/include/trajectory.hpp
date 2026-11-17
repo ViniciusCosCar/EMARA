@@ -20,8 +20,8 @@ typedef enum : uint8_t
 } trajectory_following_mode_t;
 typedef struct
 {
-        angle_t lng;
         angle_t lat;
+        angle_t lng;
 } waypoint_t;
 typedef struct
 {
