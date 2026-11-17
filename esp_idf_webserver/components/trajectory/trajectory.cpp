@@ -1,4 +1,4 @@
-#include "trajectory.h"
+#include "trajectory.hpp"
 #include <stdio.h>
 
 void func(void) {}
