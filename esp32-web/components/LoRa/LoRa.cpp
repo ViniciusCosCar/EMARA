@@ -1,5 +1,6 @@
 
 #include "LoRa.hpp"
+#include "M5_SX127X.h"
 #include <SPI.h>
 
 #define CS_PIN 33

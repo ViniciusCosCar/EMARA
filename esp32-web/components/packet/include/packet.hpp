@@ -15,7 +15,10 @@ static constexpr uint8_t MAX_CHUNK_SIZE  = MAX_PACKET_SIZE - 4; // - trajectory 
 // ==============================================================================================================================
 typedef uint8_t packet_id_t;
 extern packet_id_t current_communication_id;
-inline void update_current_communication_id() { current_communication_id++; } // yes, it's supposed to overflow
+iesp_idf_webservernline void update_current_communication_id()
+{
+        current_communication_id++;
+} // yes, it's supposed to overflow
 
 // ==============================================================================================================================
 // packet types
@@ -103,7 +106,7 @@ class trajectory_intention_ok_packet_t : public packet_t
 
       public:
         trajectory_intention_ok_packet_t(packet_id_t communication_id);
-        inline packet_id_t get_communication_id();
+        packet_id_t get_communication_id() const;
         size_t serialize(uint8_t* buf, size_t buf_size) const override;
         bool deserialize(const uint8_t* buf, size_t buf_size) override;
         void print() const override;

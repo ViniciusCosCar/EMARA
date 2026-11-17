@@ -149,8 +149,8 @@ trajectory_intention_packet_t::trajectory_intention_packet_t(
       trajectory_following_mode(trajectory_following_mode), nchunks(nchunks)
 {
 }
-inline packet_id_t trajectory_intention_packet_t::get_communication_id() { return communication_id; };
-inline Trajectory::trajectory_following_mode_t trajectory_intention_packet_t::get_following_mode() const
+packet_id_t trajectory_intention_packet_t::get_communication_id() const { return communication_id; };
+Trajectory::trajectory_following_mode_t trajectory_intention_packet_t::get_following_mode() const
 {
         return trajectory_following_mode;
 }
@@ -216,7 +216,7 @@ trajectory_intention_ok_packet_t::trajectory_intention_ok_packet_t(packet_id_t c
     : packet_t(TRAJECTORY_INTENTION_OK), communication_id(communication_id)
 {
 }
-inline packet_id_t trajectory_intention_ok_packet_t::get_communication_id() { return communication_id; };
+packet_id_t trajectory_intention_ok_packet_t::get_communication_id() const { return communication_id; };
 //
 // serialize
 //
