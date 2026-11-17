@@ -263,10 +263,17 @@ void trajectory_intention_ok_packet_t::print() const
 // ------------------------------------------------------------------------------------------------------------------------------
 trajectory_chunk_packet_t::trajectory_chunk_packet_t(packet_id_t communication_id, uint8_t chunk_n, const uint8_t* data,
                                                      const size_t data_size)
-    : packet_t(TRAJECTORY_CHUNK), communication_id(communication_id), chunk_n(chunk_n),
-      chunk_size((data_size > MAX_CHUNK_SIZE) ? MAX_CHUNK_SIZE : data_size)
+    : packet_t(TRAJECTORY_CHUNK), communication_id(communication_id), chunk_n(chunk_n)
 {
-        if (data != nullptr) memcpy(chunk, data, chunk_size);
+        if (data != nullptr)
+        {
+                chunk_size = (data_size > MAX_CHUNK_SIZE) ? MAX_CHUNK_SIZE : data_size;
+                memcpy(chunk, data, chunk_size);
+        }
+        else
+        {
+                chunk_size = 0;
+        }
 }
 packet_id_t trajectory_chunk_packet_t::get_communication_id() const { return communication_id; }
 uint8_t trajectory_chunk_packet_t::get_chunk_n() const { return chunk_n; }
