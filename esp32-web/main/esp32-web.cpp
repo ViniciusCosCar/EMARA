@@ -8,6 +8,8 @@
 #include "freertos/projdefs.h"
 #include "m5_display.h"
 #include "nvs_flash.h"
+#include "packet.hpp"
+#include "trajectory.hpp"
 #include "utils.h"
 
 const char* TAG = "webserver";
@@ -18,28 +20,6 @@ extern const char index_js_start[] asm("_binary_index_js_start");
 extern const char index_js_end[] asm("_binary_index_js_end");
 extern const char index_css_start[] asm("_binary_index_css_start");
 extern const char index_css_end[] asm("_binary_index_css_end");
-
-// —————————————————————————————————————————————————————————————————————————
-//  Trajectory
-// —————————————————————————————————————————————————————————————————————————
-enum TrajectoryMode
-{
-        Patrol = 1,
-        Hold   = 2,
-        Move   = 3,
-};
-struct Waypoint
-{
-        int lng;
-        int lat;
-};
-struct Trajectory
-{
-        struct Waypoint* waypoints;
-        int n_waypoints;
-
-        enum TrajectoryMode trajectory_mode;
-};
 
 // —————————————————————————————————————————————————————————————————————————
 //  webserver and request handlers

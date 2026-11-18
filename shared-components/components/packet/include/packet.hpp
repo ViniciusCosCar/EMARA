@@ -88,7 +88,7 @@ class trajectory_intention_packet_t : public packet_t
                                       Trajectory::trajectory_following_mode_t trajectory_following_mode,
                                       uint8_t nchunks);
 
-        packet_id_t get_communication_id();
+        packet_id_t get_communication_id() const;
         Trajectory::trajectory_following_mode_t get_following_mode() const;
         uint8_t get_nchunks() const;
         size_t serialize(uint8_t* buf, size_t buf_size) const override;
