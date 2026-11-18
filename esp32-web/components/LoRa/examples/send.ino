@@ -1,6 +1,4 @@
-#include  "lora_driver.h"
-
-uint8_t buffer[256];
+#include "LoRa.hpp"
 
 void setup()
 {
@@ -15,11 +13,13 @@ void setup()
 
 void loop()
 {
-  int received = lora_driver_receive(buffer,sizeof(buffer));
-  
-  if(received > 0)
+  const char message[] = "Hello";
+  size_t size = lora_driver_send((const uint8_t *) message, sizeof(message));
+  if(size > 0 )
   {
-    Serial.write(buffer,received);
-    Serial.println();
+    Serial.println("The message was sent");
   }
+  delay(2000);
 }
+
+

@@ -15,10 +15,7 @@ static constexpr uint8_t MAX_CHUNK_SIZE  = MAX_PACKET_SIZE - 4; // - trajectory 
 // ==============================================================================================================================
 typedef uint8_t packet_id_t;
 extern packet_id_t current_communication_id;
-iesp_idf_webservernline void update_current_communication_id()
-{
-        current_communication_id++;
-} // yes, it's supposed to overflow
+inline void update_current_communication_id() { current_communication_id++; } // yes, it's supposed to overflow
 
 // ==============================================================================================================================
 // packet types
