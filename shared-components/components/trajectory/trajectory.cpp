@@ -1,3 +1,4 @@
+
 #include "trajectory.hpp"
 #include <stdio.h>
 
