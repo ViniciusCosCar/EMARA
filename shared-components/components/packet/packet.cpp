@@ -1,7 +1,9 @@
 
 #include "packet.hpp"
+#include "LoRa.hpp"
 #include "trajectory.hpp"
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,9 +12,9 @@ using namespace Packet;
 
 packet_id_t Packet::current_communication_id = 0;
 
-// ==============================================================================================================================
+// --------------------------------------------------------
 // helpers
-// ==============================================================================================================================
+// --------------------------------------------------------
 // serialization helper
 template <typename T>
 bool write_field(uint8_t* buf, size_t buf_size, size_t& index, const T& value)
@@ -24,7 +26,6 @@ bool write_field(uint8_t* buf, size_t buf_size, size_t& index, const T& value)
 
         return true;
 }
-
 // deserialization helper
 template <typename T>
 bool read_field(const uint8_t* buf, size_t buf_size, size_t& index, T& value)
@@ -81,22 +82,61 @@ const char* trajectory_mode_to_string(Trajectory::trajectory_following_mode_t mo
                 return "Unknown";
         }
 }
-// ==============================================================================================================================
-// packet abstract class
-// ==============================================================================================================================
-packet_t::packet_t(packet_type_t type) : packet_type(type) {}
-// ------------------------------------------------------------------------------------------------------------------------------
-// telemetry
-// ------------------------------------------------------------------------------------------------------------------------------
-telemetry_packet_t::telemetry_packet_t(Trajectory::angle_int32_t lat, Trajectory::angle_int32_t lng)
-    : packet_t(TELEMETRY), lat(lat), lng(lng)
+
+// --------------------------------------------------------
+// packet classes
+// --------------------------------------------------------
+packet_t* packet_t::from_buffer(const uint8_t* buf, size_t bufsize)
 {
+        if (!buf || bufsize == 0) return nullptr;
+
+        packet_t* pk = nullptr;
+
+        switch (static_cast<packet_type_t>(buf[0]))
+        {
+        case TELEMETRY:
+                pk = new telemetry_packet_t();
+                break;
+        case TRAJECTORY_INTENTION:
+                pk = new trajectory_intention_packet_t();
+                break;
+        case TRAJECTORY_INTENTION_OK:
+                pk = new trajectory_intention_ok_packet_t();
+                break;
+        case TRAJECTORY_CHUNK:
+                pk = new trajectory_chunk_packet_t();
+                break;
+        case TRAJECTORY_CHUNK_OK:
+                pk = new trajectory_chunk_ok_packet_t();
+                break;
+        case TRAJECTORY_FLASHED:
+                pk = new trajectory_flashed_packet_t();
+                break;
+        case TRAJECTORY_FLASHED_OK:
+                pk = new trajectory_flashed_ok_packet_t();
+                break;
+        case COMMUNICATION_FAILURE:
+                pk = new communication_failure_packet_t();
+                break;
+        case COMMUNICATION_FAILURE_OK:
+                pk = new communication_failure_ok_packet_t();
+                break;
+        default:
+                return nullptr;
+        }
+
+        if (!pk->deserialize(buf, bufsize))
+        {
+                delete pk;
+                return nullptr;
+        }
+
+        return pk;
 }
-Trajectory::angle_int32_t telemetry_packet_t::get_lat() const { return lat; }
-Trajectory::angle_int32_t telemetry_packet_t::get_lng() const { return lng; }
+//
+// telemetry
 //
 // serialize
-//
 size_t telemetry_packet_t::serialize(uint8_t* buf, size_t buf_size) const
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(lat) + sizeof(lng);
@@ -113,9 +153,7 @@ size_t telemetry_packet_t::serialize(uint8_t* buf, size_t buf_size) const
 
         return index;
 }
-//
 // deserialize
-//
 bool telemetry_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(lat) + sizeof(lng);
@@ -133,33 +171,18 @@ bool telemetry_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 
         return true;
 }
-//
 // print
-//
 void telemetry_packet_t::print() const
 {
         printf("[PACKET] %s\n", packet_type_to_string(packet_type));
         printf("  Latitude:  %.7f\n", static_cast<double>(lat) / 1e7);
         printf("  Longitude: %.7f\n", static_cast<double>(lng) / 1e7);
 }
-// ------------------------------------------------------------------------------------------------------------------------------
+
+//
 // trajectory intention
-// ------------------------------------------------------------------------------------------------------------------------------
-trajectory_intention_packet_t::trajectory_intention_packet_t(
-    packet_id_t communication_id, Trajectory::trajectory_following_mode_t trajectory_following_mode, uint8_t nchunks)
-    : packet_t(TRAJECTORY_INTENTION), communication_id(communication_id),
-      trajectory_following_mode(trajectory_following_mode), nchunks(nchunks)
-{
-}
-packet_id_t trajectory_intention_packet_t::get_communication_id() const { return communication_id; };
-Trajectory::trajectory_following_mode_t trajectory_intention_packet_t::get_following_mode() const
-{
-        return trajectory_following_mode;
-}
-uint8_t trajectory_intention_packet_t::get_nchunks() const { return nchunks; }
 //
 // serialize
-//
 size_t trajectory_intention_packet_t::serialize(uint8_t* buf, size_t buf_size) const
 {
         const size_t n_bytes =
@@ -176,9 +199,7 @@ size_t trajectory_intention_packet_t::serialize(uint8_t* buf, size_t buf_size) c
 
         return index;
 }
-//
 // deserialize
-//
 bool trajectory_intention_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 {
         const size_t n_bytes =
@@ -203,9 +224,7 @@ bool trajectory_intention_packet_t::deserialize(const uint8_t* buf, size_t buf_s
 
         return true;
 }
-//
 // print
-//
 void trajectory_intention_packet_t::print() const
 {
         printf("[PACKET] %s\n", packet_type_to_string(packet_type));
@@ -213,15 +232,10 @@ void trajectory_intention_packet_t::print() const
         printf("  Following mode:   %s\n", trajectory_mode_to_string(trajectory_following_mode));
         printf("  Number of chunks: %u\n", nchunks);
 }
-// ------------------------------------------------------------------------------------------------------------------------------
-trajectory_intention_ok_packet_t::trajectory_intention_ok_packet_t(packet_id_t communication_id)
-    : packet_t(TRAJECTORY_INTENTION_OK), communication_id(communication_id)
-{
-}
-packet_id_t trajectory_intention_ok_packet_t::get_communication_id() const { return communication_id; };
+//
+// trajectory intention ok
 //
 // serialize
-//
 size_t trajectory_intention_ok_packet_t::serialize(uint8_t* buf, size_t buf_size) const
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id);
@@ -235,9 +249,7 @@ size_t trajectory_intention_ok_packet_t::serialize(uint8_t* buf, size_t buf_size
 
         return index;
 }
-//
 // deserialize
-//
 bool trajectory_intention_ok_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id);
@@ -252,17 +264,15 @@ bool trajectory_intention_ok_packet_t::deserialize(const uint8_t* buf, size_t bu
 
         return true;
 }
-//
 // print
-//
 void trajectory_intention_ok_packet_t::print() const
 {
         printf("[PACKET] %s\n", packet_type_to_string(packet_type));
         printf("  Communication ID: %u\n", communication_id);
 }
-// ------------------------------------------------------------------------------------------------------------------------------
+//
 // trajectory chunk
-// ------------------------------------------------------------------------------------------------------------------------------
+//
 trajectory_chunk_packet_t::trajectory_chunk_packet_t(packet_id_t communication_id, uint8_t chunk_n, const uint8_t* data,
                                                      const size_t data_size)
     : packet_t(TRAJECTORY_CHUNK), communication_id(communication_id), chunk_n(chunk_n)
@@ -277,13 +287,8 @@ trajectory_chunk_packet_t::trajectory_chunk_packet_t(packet_id_t communication_i
                 chunk_size = 0;
         }
 }
-packet_id_t trajectory_chunk_packet_t::get_communication_id() const { return communication_id; }
-uint8_t trajectory_chunk_packet_t::get_chunk_n() const { return chunk_n; }
-size_t trajectory_chunk_packet_t::get_chunk_size() const { return chunk_size; }
-const uint8_t* trajectory_chunk_packet_t::get_chunk() const { return chunk; }
-//
+
 // serialize
-//
 size_t trajectory_chunk_packet_t::serialize(uint8_t* buf, size_t buf_size) const
 {
         const size_t n_bytes =
@@ -303,9 +308,7 @@ size_t trajectory_chunk_packet_t::serialize(uint8_t* buf, size_t buf_size) const
 
         return index;
 }
-//
 // deserialize
-//
 bool trajectory_chunk_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 {
         const size_t min_n_bytes =
@@ -324,21 +327,15 @@ bool trajectory_chunk_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 
         if (new_chunk_size > MAX_CHUNK_SIZE || buf_size != index + new_chunk_size) return false;
 
-        uint8_t new_chunk[MAX_CHUNK_SIZE];
-
-        memcpy(new_chunk, &buf[index], new_chunk_size);
-
         communication_id = new_communication_id;
         chunk_n          = new_chunk_n;
         chunk_size       = new_chunk_size;
 
-        memcpy(chunk, new_chunk, new_chunk_size);
+        memcpy(chunk, &buf[index], new_chunk_size);
 
         return true;
 }
-//
 // print
-//
 void trajectory_chunk_packet_t::print() const
 {
         printf("[PACKET] %s\n", packet_type_to_string(packet_type));
@@ -354,16 +351,11 @@ void trajectory_chunk_packet_t::print() const
 
         printf("\n");
 }
-// ------------------------------------------------------------------------------------------------------------------------------
-trajectory_chunk_ok_packet_t::trajectory_chunk_ok_packet_t(packet_id_t communication_id, uint8_t chunk_n)
-    : packet_t(TRAJECTORY_CHUNK_OK), communication_id(communication_id), chunk_n(chunk_n)
-{
-}
-packet_id_t trajectory_chunk_ok_packet_t::get_communication_id() const { return communication_id; }
-uint8_t trajectory_chunk_ok_packet_t::get_chunk_n() const { return chunk_n; }
+
+//
+// trajectory chunk ok
 //
 // serialize
-//
 size_t trajectory_chunk_ok_packet_t::serialize(uint8_t* buf, size_t buf_size) const
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id) + sizeof(chunk_n);
@@ -378,9 +370,7 @@ size_t trajectory_chunk_ok_packet_t::serialize(uint8_t* buf, size_t buf_size) co
 
         return index;
 }
-//
 // deserialize
-//
 bool trajectory_chunk_ok_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id) + sizeof(chunk_n);
@@ -400,26 +390,18 @@ bool trajectory_chunk_ok_packet_t::deserialize(const uint8_t* buf, size_t buf_si
 
         return true;
 }
-//
 // print
-//
 void trajectory_chunk_ok_packet_t::print() const
 {
         printf("[PACKET] %s\n", packet_type_to_string(packet_type));
         printf("  Communication ID: %u\n", communication_id);
         printf("  Chunk number:     %u\n", chunk_n);
 }
-// ------------------------------------------------------------------------------------------------------------------------------
+
+//
 // trajectory flashed
-// ------------------------------------------------------------------------------------------------------------------------------
-trajectory_flashed_packet_t::trajectory_flashed_packet_t(packet_id_t communication_id)
-    : packet_t(TRAJECTORY_FLASHED), communication_id(communication_id)
-{
-}
-packet_id_t trajectory_flashed_packet_t::get_communication_id() const { return communication_id; }
 //
 // serialize
-//
 size_t trajectory_flashed_packet_t::serialize(uint8_t* buf, size_t buf_size) const
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id);
@@ -433,9 +415,7 @@ size_t trajectory_flashed_packet_t::serialize(uint8_t* buf, size_t buf_size) con
 
         return index;
 }
-//
 // deserialize
-//
 bool trajectory_flashed_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id);
@@ -450,24 +430,16 @@ bool trajectory_flashed_packet_t::deserialize(const uint8_t* buf, size_t buf_siz
 
         return true;
 }
-//
 // print
-//
 void trajectory_flashed_packet_t::print() const
 {
         printf("[PACKET] %s\n", packet_type_to_string(packet_type));
         printf("  Communication ID: %u\n", communication_id);
 }
-// ------------------------------------------------------------------------------------------------------------------------------
-trajectory_flashed_ok_packet_t::trajectory_flashed_ok_packet_t(packet_id_t communication_id)
-    : packet_t(TRAJECTORY_FLASHED_OK), communication_id(communication_id)
-{
-}
-packet_id_t trajectory_flashed_ok_packet_t::get_communication_id() const { return communication_id; }
+//
+// trajectory flashed ok
 //
 // serialize
-//
-//
 size_t trajectory_flashed_ok_packet_t::serialize(uint8_t* buf, size_t buf_size) const
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id);
@@ -483,9 +455,7 @@ size_t trajectory_flashed_ok_packet_t::serialize(uint8_t* buf, size_t buf_size) 
 
         return index;
 }
-//
 // deserialize
-//
 bool trajectory_flashed_ok_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id);
@@ -500,27 +470,16 @@ bool trajectory_flashed_ok_packet_t::deserialize(const uint8_t* buf, size_t buf_
 
         return true;
 }
-//
 // print
-//
 void trajectory_flashed_ok_packet_t::print() const
 {
         printf("[PACKET] %s\n", packet_type_to_string(packet_type));
         printf("  Communication ID: %u\n", communication_id);
 }
-// ------------------------------------------------------------------------------------------------------------------------------
+//
 // communication failure
-// ------------------------------------------------------------------------------------------------------------------------------
-communication_failure_packet_t::communication_failure_packet_t(packet_id_t communication_id, uint8_t error_code)
-    : packet_t(COMMUNICATION_FAILURE), communication_id(communication_id), error_code(error_code)
-{
-}
-
-packet_id_t communication_failure_packet_t::get_communication_id() const { return communication_id; }
-uint8_t communication_failure_packet_t::get_error_code() const { return error_code; }
 //
 // serialize
-//
 size_t communication_failure_packet_t::serialize(uint8_t* buf, size_t buf_size) const
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id) + sizeof(error_code);
@@ -535,9 +494,7 @@ size_t communication_failure_packet_t::serialize(uint8_t* buf, size_t buf_size) 
 
         return index;
 }
-//
 // deserialize
-//
 bool communication_failure_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id) + sizeof(error_code);
@@ -557,25 +514,17 @@ bool communication_failure_packet_t::deserialize(const uint8_t* buf, size_t buf_
 
         return true;
 }
-//
 // print
-//
 void communication_failure_packet_t::print() const
 {
         printf("[PACKET] %s\n", packet_type_to_string(packet_type));
         printf("  Communication ID: %u\n", communication_id);
         printf("  Error code:        %u\n", error_code);
 }
-// ------------------------------------------------------------------------------------------------------------------------------
-communication_failure_ok_packet_t::communication_failure_ok_packet_t(packet_id_t communication_id)
-    : packet_t(COMMUNICATION_FAILURE_OK), communication_id(communication_id)
-{
-}
-packet_id_t communication_failure_ok_packet_t::get_communication_id() const { return communication_id; }
-
+//
+// communication failure ok
 //
 // serialize
-//
 size_t communication_failure_ok_packet_t::serialize(uint8_t* buf, size_t buf_size) const
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id);
@@ -591,10 +540,7 @@ size_t communication_failure_ok_packet_t::serialize(uint8_t* buf, size_t buf_siz
 
         return index;
 }
-
-//
 // deserialize
-//
 bool communication_failure_ok_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id);
@@ -609,9 +555,7 @@ bool communication_failure_ok_packet_t::deserialize(const uint8_t* buf, size_t b
 
         return true;
 }
-//
 // print
-//
 void communication_failure_ok_packet_t::print() const
 {
         printf("[PACKET] %s\n", packet_type_to_string(packet_type));

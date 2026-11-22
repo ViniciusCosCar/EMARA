@@ -1,2 +1,2 @@
-idf_component_register(SRCS "shared-components.c"
+idf_component_register(SRCS "shared-components.cpp"
                     INCLUDE_DIRS ".")
