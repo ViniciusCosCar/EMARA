@@ -1,14 +1,11 @@
-
-#ifndef LORA_DRIVER_H
-#define LORA_DRIVER_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
 
-bool lora_driver_init(void);
+bool LoRa_driver_init(void);
 
-int lora_driver_send(const uint8_t* data, size_t len);
+size_t LoRa_driver_send(const uint8_t* data, size_t len);
+size_t LoRa_driver_receive(uint8_t* buffer, size_t max_len);
 
-int lora_driver_receive(uint8_t* buffer, size_t max_len);
-
-#endif
+void LoRa_on_rx(void (*callback)(int));

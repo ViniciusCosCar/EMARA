@@ -16,7 +16,7 @@
 #define LORA_BW 125E3
 #define LORA_TX_POWER 17
 
-bool lora_driver_init(void)
+bool LoRa_driver_init(void)
 {
         SPI.begin(LORA_SCLK, LORA_MISO, LORA_MOSI, -1);
 
@@ -31,30 +31,37 @@ bool lora_driver_init(void)
         LoRa.setSpreadingFactor(LORA_SF);
 
         if (!LoRa.begin(LORA_FREQ)) return false;
+
         return true;
 }
 
-int lora_driver_send(const uint8_t* data, size_t len)
+// send pacekt
+// note: don't forget to put it back on RX mode afterwards!!!
+size_t LoRa_driver_send(const uint8_t* data, size_t len)
 {
-        if (!LoRa.beginPacket()) return -1;
+        if (data == nullptr || len == 0) return 0;
+
+        // enter idle mode and start LoRa packet
+        // note: change mode if not 1
+        if (!LoRa.beginPacket()) return 0;
 
         size_t size = LoRa.write(data, len);
 
         if (size != len)
         {
                 LoRa.endPacket();
-                return -1;
+                return 0;
         }
-        if (!LoRa.endPacket()) return -1;
+        // enter TX mode
+        if (!LoRa.endPacket()) return 0;
 
         return size;
 }
 
-int lora_driver_receive(uint8_t* buffer, size_t max_len)
+// partially blocking reading function
+size_t LoRa_driver_receive(uint8_t* buffer, size_t max_len)
 {
-        int PacketLength = LoRa.parsePacket();
-
-        if (!PacketLength) return 0;
+        if (!LoRa.parsePacket()) return 0;
 
         size_t BytesRead = 0;
 
@@ -64,5 +71,8 @@ int lora_driver_receive(uint8_t* buffer, size_t max_len)
                 BytesRead++;
         }
 
-        return (int)BytesRead;
+        return BytesRead;
 }
+
+// register callback to be called when a packet is received
+void LoRa_on_rx(void (*callback)(int)) { LoRa.onReceive(callback); }
