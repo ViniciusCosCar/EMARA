@@ -37,11 +37,6 @@ bool read_field(const uint8_t* buf, size_t buf_size, size_t& index, T& value)
 
         return true;
 }
-// general
-bool valid_packet_type(const uint8_t* buf, size_t buf_size, packet_type_t expected)
-{
-        return buf != nullptr && buf_size > 0 && buf[0] == static_cast<uint8_t>(expected);
-}
 const char* packet_type_to_string(packet_type_t type)
 {
         switch (type)
@@ -141,7 +136,7 @@ size_t telemetry_packet_t::serialize(uint8_t* buf, size_t buf_size) const
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(lat) + sizeof(lng);
 
-        if (buf == nullptr || buf_size < n_bytes) return 0;
+        if (!buf || buf_size < n_bytes) return 0;
 
         size_t index = 0;
 
@@ -157,7 +152,7 @@ size_t telemetry_packet_t::serialize(uint8_t* buf, size_t buf_size) const
 bool telemetry_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(lat) + sizeof(lng);
-        if (!valid_packet_type(buf, buf_size, TELEMETRY) || buf_size != n_bytes) return false;
+        if (!buf || static_cast<packet_type_t>(buf[0]) != TELEMETRY || buf_size < n_bytes) return false;
 
         size_t index = sizeof(packet_type);
 
@@ -188,7 +183,7 @@ size_t trajectory_intention_packet_t::serialize(uint8_t* buf, size_t buf_size) c
         const size_t n_bytes =
             sizeof(packet_type) + sizeof(communication_id) + sizeof(trajectory_following_mode) + sizeof(nchunks);
 
-        if (buf == nullptr || buf_size < n_bytes) return 0;
+        if (!buf || buf_size < n_bytes) return 0;
 
         size_t index = 0;
 
@@ -205,7 +200,7 @@ bool trajectory_intention_packet_t::deserialize(const uint8_t* buf, size_t buf_s
         const size_t n_bytes =
             sizeof(packet_type) + sizeof(communication_id) + sizeof(trajectory_following_mode) + sizeof(nchunks);
 
-        if (!valid_packet_type(buf, buf_size, TRAJECTORY_INTENTION) || buf_size != n_bytes) return false;
+        if (!buf || static_cast<packet_type_t>(buf[0]) != TRAJECTORY_INTENTION || buf_size < n_bytes) return false;
 
         size_t index = sizeof(packet_type);
 
@@ -240,7 +235,7 @@ size_t trajectory_intention_ok_packet_t::serialize(uint8_t* buf, size_t buf_size
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id);
 
-        if (buf == nullptr || buf_size < n_bytes) return 0;
+        if (!buf || buf_size < n_bytes) return 0;
 
         size_t index = 0;
 
@@ -253,7 +248,7 @@ size_t trajectory_intention_ok_packet_t::serialize(uint8_t* buf, size_t buf_size
 bool trajectory_intention_ok_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id);
-        if (!valid_packet_type(buf, buf_size, TRAJECTORY_INTENTION_OK) || buf_size != n_bytes) return false;
+        if (!buf || static_cast<packet_type_t>(buf[0]) != TRAJECTORY_INTENTION_OK || buf_size < n_bytes) return false;
 
         size_t index = sizeof(packet_type);
         packet_id_t new_communication_id;
@@ -277,7 +272,7 @@ trajectory_chunk_packet_t::trajectory_chunk_packet_t(packet_id_t communication_i
                                                      const size_t data_size)
     : packet_t(TRAJECTORY_CHUNK), communication_id(communication_id), chunk_n(chunk_n)
 {
-        if (data != nullptr)
+        if (!data)
         {
                 chunk_size = (data_size > MAX_CHUNK_SIZE) ? MAX_CHUNK_SIZE : data_size;
                 memcpy(chunk, data, chunk_size);
@@ -294,7 +289,7 @@ size_t trajectory_chunk_packet_t::serialize(uint8_t* buf, size_t buf_size) const
         const size_t n_bytes =
             sizeof(packet_type) + sizeof(communication_id) + sizeof(chunk_n) + sizeof(chunk_size) + chunk_size;
 
-        if (buf == nullptr || buf_size < n_bytes) return 0;
+        if (!buf || buf_size < n_bytes) return 0;
 
         size_t index = 0;
 
@@ -313,7 +308,7 @@ bool trajectory_chunk_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 {
         const size_t min_n_bytes =
             sizeof(packet_type) + sizeof(communication_id) + sizeof(chunk_n) + sizeof(chunk_size);
-        if (!valid_packet_type(buf, buf_size, TRAJECTORY_CHUNK) || buf_size < min_n_bytes) return false;
+        if (!buf || static_cast<packet_type_t>(buf[0]) != TRAJECTORY_CHUNK || buf_size < min_n_bytes) return false;
 
         size_t index = sizeof(packet_type);
 
@@ -360,7 +355,7 @@ size_t trajectory_chunk_ok_packet_t::serialize(uint8_t* buf, size_t buf_size) co
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id) + sizeof(chunk_n);
 
-        if (buf == nullptr || buf_size < n_bytes) return 0;
+        if (!buf || buf_size < n_bytes) return 0;
 
         size_t index = 0;
 
@@ -375,7 +370,7 @@ bool trajectory_chunk_ok_packet_t::deserialize(const uint8_t* buf, size_t buf_si
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id) + sizeof(chunk_n);
 
-        if (!valid_packet_type(buf, buf_size, TRAJECTORY_CHUNK_OK) || buf_size != n_bytes) return false;
+        if (!buf || static_cast<packet_type_t>(buf[0]) != TRAJECTORY_CHUNK_OK || buf_size < n_bytes) return false;
 
         size_t index = sizeof(packet_type);
 
@@ -406,7 +401,7 @@ size_t trajectory_flashed_packet_t::serialize(uint8_t* buf, size_t buf_size) con
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id);
 
-        if (buf == nullptr || buf_size < n_bytes) return 0;
+        if (!buf || buf_size < n_bytes) return 0;
 
         size_t index = 0;
 
@@ -419,7 +414,7 @@ size_t trajectory_flashed_packet_t::serialize(uint8_t* buf, size_t buf_size) con
 bool trajectory_flashed_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id);
-        if (!valid_packet_type(buf, buf_size, TRAJECTORY_FLASHED) || buf_size != n_bytes) return false;
+        if (!buf || static_cast<packet_type_t>(buf[0]) != TRAJECTORY_FLASHED) || buf_size < n_bytes) return false;
 
         size_t index = sizeof(packet_type);
         packet_id_t new_communication_id;
@@ -444,7 +439,7 @@ size_t trajectory_flashed_ok_packet_t::serialize(uint8_t* buf, size_t buf_size) 
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id);
 
-        if (buf == nullptr || buf_size < n_bytes) return 0;
+        if (!buf || buf_size < n_bytes) return 0;
 
         size_t index = 0;
 
@@ -459,7 +454,7 @@ size_t trajectory_flashed_ok_packet_t::serialize(uint8_t* buf, size_t buf_size) 
 bool trajectory_flashed_ok_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id);
-        if (!valid_packet_type(buf, buf_size, TRAJECTORY_FLASHED_OK) || buf_size != n_bytes) return false;
+        if (!buf || static_cast<packet_type_t>(buf[0]) != TRAJECTORY_FLASHED_OK || buf_size < n_bytes) return false;
 
         size_t index = sizeof(packet_type);
         packet_id_t new_communication_id;
@@ -484,7 +479,7 @@ size_t communication_failure_packet_t::serialize(uint8_t* buf, size_t buf_size) 
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id) + sizeof(error_code);
 
-        if (buf == nullptr || buf_size < n_bytes) return 0;
+        if (!buf || buf_size < n_bytes) return 0;
 
         size_t index = 0;
 
@@ -498,7 +493,7 @@ size_t communication_failure_packet_t::serialize(uint8_t* buf, size_t buf_size) 
 bool communication_failure_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id) + sizeof(error_code);
-        if (!valid_packet_type(buf, buf_size, COMMUNICATION_FAILURE) || buf_size != n_bytes) return false;
+        if (!buf || static_cast<packet_type_t>(buf[0]) != COMMUNICATION_FAILURE || buf_size < n_bytes) return false;
 
         size_t index = sizeof(packet_type);
 
@@ -529,7 +524,7 @@ size_t communication_failure_ok_packet_t::serialize(uint8_t* buf, size_t buf_siz
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id);
 
-        if (buf == nullptr || buf_size < n_bytes) return 0;
+        if (!buf || buf_size < n_bytes) return 0;
 
         size_t index = 0;
 
@@ -544,7 +539,7 @@ size_t communication_failure_ok_packet_t::serialize(uint8_t* buf, size_t buf_siz
 bool communication_failure_ok_packet_t::deserialize(const uint8_t* buf, size_t buf_size)
 {
         const size_t n_bytes = sizeof(packet_type) + sizeof(communication_id);
-        if (!valid_packet_type(buf, buf_size, COMMUNICATION_FAILURE_OK) || buf_size != n_bytes) return false;
+        if (!buf || static_cast<packet_type_t>(buf[0]) != COMMUNICATION_FAILURE_OK || buf_size < n_bytes) return false;
 
         size_t index = sizeof(packet_type);
         packet_id_t new_communication_id;

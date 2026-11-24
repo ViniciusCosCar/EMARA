@@ -16,6 +16,7 @@
 #define LORA_BW 125E3
 #define LORA_TX_POWER 17
 
+// initialize lora driver
 bool LoRa_driver_init(void)
 {
         SPI.begin(LORA_SCLK, LORA_MISO, LORA_MOSI, -1);
@@ -36,8 +37,7 @@ bool LoRa_driver_init(void)
 }
 
 // send pacekt
-// note: don't forget to put it back on RX mode afterwards!!!
-size_t LoRa_driver_send(const uint8_t* data, size_t len)
+size_t LoRa_driver_send_chunk(const uint8_t* data, size_t len)
 {
         if (data == nullptr || len == 0) return 0;
 
@@ -75,4 +75,7 @@ size_t LoRa_driver_receive(uint8_t* buffer, size_t max_len)
 }
 
 // register callback to be called when a packet is received
-void LoRa_on_rx(void (*callback)(int)) { LoRa.onReceive(callback); }
+void LoRa_on_receive(void (*callback)(int)) { LoRa.onReceive(callback); }
+
+// read and return byte from FIFO register
+int LoRa_read_intbyte() { return LoRa.read(); }

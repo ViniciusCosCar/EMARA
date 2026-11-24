@@ -1,16 +1,21 @@
 
+#include "LoRa.hpp"
 #include "freertos/FreeRTOS.h"
 
 #include "Arduino.h"
 #include "app_wifi.h"
 #include "esp_err.h"
+#include "esp_event.h"
 #include "esp_http_server.h"
+#include "freertos/idf_additions.h"
 #include "freertos/projdefs.h"
 #include "m5_display.h"
 #include "nvs_flash.h"
 #include "packet.hpp"
+#include "system_handler.hpp"
 #include "trajectory.hpp"
 #include "utils.h"
+#include <cstring>
 
 const char* TAG = "webserver";
 
@@ -118,6 +123,35 @@ httpd_handle_t start_webserver()
 }
 
 // —————————————————————————————————————————————————————————————————————————
+//  LoRa
+// —————————————————————————————————————————————————————————————————————————
+// TODO: replace pseudo: notifyFromISR() with xTaskNotifyFromISR()
+void callback_on_pk_reception(int datasize)
+{
+        if (datasize > MAX_PACKET_SIZE || datasize < 0)
+        {
+                xTaskNotifyFromISR(system_handle, LORA_PACKET_RECEIVED_BUT_ERROR | FAILURE_RC_OVERFLOW,
+                                   eSetValueWithOverwrite, NULL);
+                return;
+        }
+
+        for (size_t i = 0; i < datasize; i++)
+        {
+                int intres = LoRa_read_intbyte();
+                if (intres < 0)
+                {
+                        xTaskNotifyFromISR(system_handle, LORA_PACKET_RECEIVED_BUT_ERROR | FAILURE_RC_UNKNOWN,
+                                           eSetValueWithOverwrite, NULL);
+                        return;
+                };
+                pk_data[i] = static_cast<uint8_t>(intres);
+        }
+
+        xTaskNotifyFromISR(system_handle, LORA_PACKET_RECEIVED, eSetValueWithOverwrite, NULL);
+        return;
+}
+
+// —————————————————————————————————————————————————————————————————————————
 //  main application
 // —————————————————————————————————————————————————————————————————————————
 extern "C" void app_main(void)
@@ -129,6 +163,7 @@ extern "C" void app_main(void)
 
         // nvs_flash
         ret = nvs_flash_init();
+
         if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
         {
                 ESP_ERROR_CHECK(nvs_flash_erase());
@@ -141,5 +176,11 @@ extern "C" void app_main(void)
         httpd_handle_t server = start_webserver();
         if (!server) ESP_ERROR_CHECK(ESP_FAIL);
 
-        while (true) vTaskDelay(pdMS_TO_TICKS(500));
+        // initalize LoRa driver
+        LoRa_driver_init();
+        LoRa_on_receive(callback_on_pk_reception);
+
+        while (true)
+        {
+        }
 }

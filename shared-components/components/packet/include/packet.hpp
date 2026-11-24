@@ -36,8 +36,6 @@ typedef enum : uint8_t
         COMMUNICATION_FAILURE,
         COMMUNICATION_FAILURE_OK,
 
-        N_PACKET_TYPES
-
 } packet_type_t;
 // --------------------------------------------------------
 // packet classes

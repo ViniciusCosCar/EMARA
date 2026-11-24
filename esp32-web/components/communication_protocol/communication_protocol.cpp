@@ -1,7 +1,5 @@
-#include <stdio.h>
-#include "communication_protocol.h"
+#include "communication_protocol.hpp"
+#include "trajectory.hpp"
+#include "LoRa.hpp"
+#include "packet.hpp"
 
-void func(void)
-{
-
-}

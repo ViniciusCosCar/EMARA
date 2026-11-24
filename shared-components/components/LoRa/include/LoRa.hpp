@@ -3,9 +3,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-bool LoRa_driver_init(void);
+// initialize LoRa driver
+bool LoRa_init(void);
 
-size_t LoRa_driver_send(const uint8_t* data, size_t len);
-size_t LoRa_driver_receive(uint8_t* buffer, size_t max_len);
+// send pacekt
+size_t LoRa_send_chunk(const uint8_t*, size_t);
 
-void LoRa_on_rx(void (*callback)(int));
+// register callback to be called when a packet is received
+void LoRa_on_receive(void (*callback)(int));
+
+// read and return byte from FIFO register
+int LoRa_read_intbyte();
